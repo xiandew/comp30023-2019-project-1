@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 	struct sockaddr_in serv_addr;
 	bzero(&serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	inet_pton(AF_INET, argv[1], &(serv_addr.sin_addr));
 	serv_addr.sin_port = htons(atoi(argv[2]));
 
 	// bind address to socket
@@ -92,7 +92,9 @@ int main(int argc, char * argv[])
 					socklen_t clilen = sizeof(cliaddr);
 					int newsockfd = accept(sockfd, (struct sockaddr *)&cliaddr, &clilen);
 					if (newsockfd < 0)
-					perror("accept");
+					{
+						perror("accept");
+					}
 					else
 					{
 						// add the socket to the set
@@ -134,7 +136,7 @@ int main(int argc, char * argv[])
 						char *html_content = NULL;
 						if (!strncmp(buff, "GET /", 5))
 						{
-							html_content = read_file("lab6-GET.html");
+							html_content = read_file("html_pages/1_intro.html");
 							sprintf(buff,
 								"HTTP/1.1 200 OK\n"
 								"Content-Type: text/html\n"
