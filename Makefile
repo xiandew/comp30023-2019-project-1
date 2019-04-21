@@ -1,27 +1,25 @@
 # Xiande Wen, 905003
-
 CC     = gcc
 CFLAGS = -Wall -std=c99
 # modify the flags here ^
 EXE    = image_tagger
-OBJ    = main.o list.o spell.o hashtbl.o
-# add any new object files here ^
+ODIR   = bin
+_OBJ   = image_tagger.o preg_match_all.o
+OBJ    = $(patsubst %, $(ODIR)/%, $(_OBJ))
+DEPS   = preg_match_all.h
 
-# top (default) target
+# top (default) targets
 all: $(EXE)
 
 # how to link executable
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJ)
 
-# other dependencies
-main.o: list.h spell.h
-spell.o: spell.h list.h hashtbl.h
-list.o: list.h
-hashtbl.o: hashtbl.h
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-# ^ add any new dependencies here (for example if you add new modules)
-
+$(ODIR):
+	mkdir -p $@
 
 # phony targets (these targets do not represent actual files)
 .PHONY: clean cleanly all CLEAN
