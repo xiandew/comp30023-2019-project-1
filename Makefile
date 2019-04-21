@@ -3,9 +3,8 @@ CC     = gcc
 CFLAGS = -Wall -std=c99
 # modify the flags here ^
 EXE    = image_tagger
-ODIR   = bin
-_OBJ   = image_tagger.o preg_match_all.o
-OBJ    = $(patsubst %, $(ODIR)/%, $(_OBJ))
+OBJDIR   = bin
+OBJ   = $(addprefix $(OBJDIR)/, image_tagger.o preg_match_all.o)
 DEPS   = preg_match_all.h
 
 # top (default) targets
@@ -15,10 +14,12 @@ all: $(EXE)
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJ)
 
-$(ODIR)/%.o: %.c $(DEPS)
+$(OBJ): | $(OBJDIR)
+
+$(OBJDIR)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-$(ODIR):
+$(OBJDIR):
 	mkdir -p $@
 
 # phony targets (these targets do not represent actual files)
