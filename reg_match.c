@@ -4,7 +4,7 @@
 #include <strings.h>
 #include <regex.h>
 
-#include "preg_match_all.h"
+#include "reg_match.h"
 
 char *getsubstr(char *s, regmatch_t *pmatch)
 {
@@ -14,7 +14,7 @@ char *getsubstr(char *s, regmatch_t *pmatch)
 	return buff;
 }
 
-void preg_match_all(char *pattern, char *buffer, char **matches)
+void reg_match(char *pattern, char *buffer, char **matches)
 {
 	regmatch_t pmatch;
 	regex_t reg;

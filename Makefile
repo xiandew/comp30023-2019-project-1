@@ -6,8 +6,8 @@ CFLAGS = -Wall -std=c99
 # modify the flags here ^
 EXE    = image_tagger
 OBJDIR   = bin
-OBJ   = $(addprefix $(OBJDIR)/, image_tagger.o preg_match_all.o)
-DEPS   = preg_match_all.h
+OBJ   = $(addprefix $(OBJDIR)/, image_tagger.o reg_match.o)
+DEPS   = reg_match.h
 
 # top (default) targets
 all: $(EXE)

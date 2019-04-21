@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "preg_match_all.h"
+#include "reg_match.h"
 
 char *read_file(char *file_name);
 
@@ -133,6 +133,7 @@ int main(int argc, char * argv[])
 					}
 					else
 					{
+						printf("%s", buff);
 						char *html_content = NULL;
 						if (!strncmp(buff, "GET /", 5))
 						{
@@ -141,13 +142,12 @@ int main(int argc, char * argv[])
 								"HTTP/1.1 200 OK\n"
 								"Content-Type: text/html\n"
 								"Content-Length: %ld\n\n%s",
-								strlen(html_content), html_content
-							);
+								strlen(html_content), html_content);
 						}
 						if (!strncmp(buff, "POST /", 6))
 						{
 							char **matches = malloc(sizeof(char **));
-							preg_match_all("user=[a-zA-Z]+", buff, matches);
+							reg_match("user=[a-zA-Z]+", buff, matches);
 							char *username_ptr = matches[0] + 5;
 							char username[strlen(username_ptr)];
 							strcpy(username, username_ptr);
@@ -169,17 +169,15 @@ int main(int argc, char * argv[])
 								"HTTP/1.1 200 OK\n"
 								"Content-Type: text/html\n"
 								"Content-Length: %ld\n\n%s",
-								strlen(html_content), html_content
-							);
+								strlen(html_content), html_content);
 						}
-
+						free(html_content);
 						if (write(i, buff, strlen(buff)) < 0)
 						{
 							perror("write");
 							close(i);
 							FD_CLR(i, &masterfds);
 						}
-						free(html_content);
 					}
 				}
 			}
