@@ -32,41 +32,72 @@ void read_html(char *htmlname) {
 	close(fd);
 }
 
+int get_player_id(char *request) {
+	char *cookie_payload= strstr(request, NEEDLE_COOKIE) + strlen(NEEDLE_COOKIE);
+	cookie_payload[strcspn(player_id, "\r\n")] = 0;
+	return atoi(cookie_payload);
+}
+
+void append_name_to_html(char *name) {
+	char *rest_ptr = strstr(htmlbuff, "<form method=\"GET\">");
+	char rest[strlen(rest_ptr)];
+	strcpy(rest, rest_ptr);
+	char *ptr = rest_ptr;
+	strcpy(ptr, "<p>");
+	ptr += 3;
+	strcpy(ptr, name);
+	ptr += strlen(name);
+	strcpy(ptr, "</p>");
+	ptr += 4;
+	strcpy(ptr, rest);
+}
+
 char *get_response(char *request) {
 	bzero(response, BUFFER_SIZE);
 	bzero(htmlbuff, BUFFER_SIZE);
 
+	// response of the intro page
 	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
 		read_html(HTML_INTRO);
+		// add a new player. Response with Set-cookie.
+		if (!strstr(request, NEEDLE_COOKIE)) {
+			int player_id = num_players;
+			add_player(new_player(player_id));
+			snprintf(response, BUFFER_SIZE,
+				HTTP_200_SET_COOKIE_FORMAT,
+				player_id, strlen(htmlbuff), htmlbuff);
+		}
 	}
+
+	// response to submission of the player name
+	if (!strncmp(request, POST, strlen(POST))) {
+		if (strstr(request, NEEDLE_USER)) {
+			char *name = strstr(request, NEEDLE_USER) + strlen(NEEDLE_USER);
+			add_name_to_player(get_player_id(request), name);
+
+			read_html(HTML_START);
+			append_name_to_html(name);
+		}
+	}
+
+	// response to press of the start button
 	if (!strncmp(request, GET_START, strlen(GET_START))) {
 		read_html(HTML_FIRST_TURN);
 	}
-	if (!strncmp(request, POST, strlen(POST))) {
-		char *username = strstr(request, "user=") + 5;
 
-		read_html(HTML_START);
-		char *rest_ptr = strstr(htmlbuff, "<form method=\"GET\">");
-		char rest[strlen(rest_ptr)];
-		strcpy(rest, rest_ptr);
-		char *ptr = rest_ptr;
-		strcpy(ptr, "<p>");
-		ptr += 3;
-		strcpy(ptr, username);
-		ptr += strlen(username);
-		strcpy(ptr, "</p>");
-		ptr += 4;
-		strcpy(ptr, rest);
-	}
-
+	// response to invalid requests
 	if (!strlen(htmlbuff)) {
 		if (!strncmp(request, GET, strlen(GET))) {
 			strcpy(response, HTTP_404);
 		} else {
 			strcpy(response, HTTP_400);
 		}
-	} else {
+	}
+
+	// response to players with cookies
+	else if (!strlen(response)) {
 		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
 	}
+
 	return response;
 }
