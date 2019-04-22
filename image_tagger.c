@@ -107,15 +107,14 @@ int main(int argc, char * argv[]) {
 					if (n <= 0) {
 						if (n < 0) {
 							perror("read");
-						} else {
-							printf("socket %d close the connection\n", i);
 						}
 						close(i);
 						FD_CLR(i, &masterfds);
 					} else {
+						printf("%s", request);
 						// create reponse message
 						char *response = get_response(request);
-
+						// printf("%s", response);
 						if (write(i, response, strlen(response)) < 0) {
 							perror("write");
 							close(i);

@@ -15,11 +15,18 @@
 
 #define BUFFER_SIZE 2048
 
-typedef enum {
-	GET,
-	POST,
-	UNKNOWN
-} METHOD;
+#define HTTP_200_FORMAT "HTTP/1.1 200 OK\r\n\
+Content-Type: text/html\r\n\
+Content-Length: %ld\r\n\r\n%s"
+
+#define HTTP_400 "HTTP/1.1 400 Bad Request\r\n\
+Content-Length: 0\r\n\r\n"
+
+#define HTTP_404 "HTTP/1.1 404 Not Found\r\n\
+Content-Length: 0\r\n\r\n"
+
+#define GET "GET / "
+#define POST "POST / "
 
 char *get_response(char *request);
 
