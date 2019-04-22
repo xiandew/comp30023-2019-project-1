@@ -51,9 +51,9 @@ void add_name_to_player(int id, char *name) {
 
 void free_players() {
     for (int i = 0; i < num_players; i++) {
-        player_t *player = players[i]
+        player_t *player = players[i];
         free(player->name);
-        for (int j = 0; j < num_keywords; j++) {
+        for (int j = 0; j < player->num_keywords; j++) {
             free(player->keywords[j]);
         }
         free(player->keywords);

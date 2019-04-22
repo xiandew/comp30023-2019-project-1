@@ -34,7 +34,7 @@ void read_html(char *htmlname) {
 
 int get_player_id(char *request) {
 	char *cookie_payload= strstr(request, NEEDLE_COOKIE) + strlen(NEEDLE_COOKIE);
-	cookie_payload[strcspn(player_id, "\r\n")] = 0;
+	cookie_payload[strcspn(cookie_payload, "\r\n")] = 0;
 	return atoi(cookie_payload);
 }
 
