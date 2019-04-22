@@ -34,11 +34,14 @@ void read_html(char *htmlname) {
 int get_user_id(char *request) {
 	char *cookie_payload= strstr(request, NEEDLE_COOKIE);
 	if (cookie_payload) {
-		char *user_id = cookie_payload + strlen(NEEDLE_COOKIE);
-		char cpy[strlen(user_id)];
-		strcpy(cpy, user_id);
-		cpy[strcspn(user_id, "\r\n")] = 0;
-		return atoi(cpy);
+		cookie_payload += strlen(NEEDLE_COOKIE);
+		char cpy[strlen(cookie_payload)];
+		strcpy(cpy, cookie_payload);
+		cpy[strcspn(cookie_payload, "\r\n")] = 0;
+		int user_id = atoi(cpy);
+		if (user_id < num_users) {
+			return user_id;
+		}
 	}
 	return -1;
 }
@@ -74,16 +77,17 @@ char *get_response(char *request) {
 			snprintf(response, BUFFER_SIZE,
 				HTTP_200_SET_COOKIE_FORMAT,
 				user_id, strlen(htmlbuff), htmlbuff);
-		} else {
+		}
+		// otherwise proceed the user to the start page
+		else if (users[user_id]->name) {
 			read_html(HTML_START);
-			//append_name_to_html(users[user_id]->name);
+			append_name_to_html(users[user_id]->name);
 		}
 	}
 
 	// response to submission of the user name
 	if (!strncmp(request, POST_INTRO, strlen(POST_INTRO))) {
 		char *payload = strstr(request, NEEDLE_NAME);
-
 		if (payload) {
 			char *name = payload + strlen(NEEDLE_NAME);
 			printf("%s\n", name);
@@ -100,9 +104,9 @@ char *get_response(char *request) {
 	}
 
 	// response to submission of a keyword
-	// if (!strncmp(request, POST_START, strlen(POST_START))) {
-	//
-	// }
+	if (!strncmp(request, POST_START, strlen(POST_START))) {
+
+	}
 
 	// response to invalid requests
 	if (!strlen(htmlbuff)) {
