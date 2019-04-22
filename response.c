@@ -36,8 +36,11 @@ char *get_response(char *request) {
 	bzero(response, BUFFER_SIZE);
 	bzero(htmlbuff, BUFFER_SIZE);
 
-	if (!strncmp(request, GET, strlen(GET))) {
+	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
 		read_html(HTML_INTRO);
+	}
+	if (!strncmp(request, GET_START, strlen(GET_START))) {
+		read_html(HTML_FIRST_TURN);
 	}
 	if (!strncmp(request, POST, strlen(POST))) {
 		char *username = strstr(request, "user=") + 5;
@@ -47,15 +50,17 @@ char *get_response(char *request) {
 		char rest[strlen(rest_ptr)];
 		strcpy(rest, rest_ptr);
 		char *ptr = rest_ptr;
+		strcpy(ptr, "<p>");
+		ptr += 3;
 		strcpy(ptr, username);
 		ptr += strlen(username);
-		strcpy(ptr++, ",");
-		strcpy(ptr++, " ");
+		strcpy(ptr, "</p>");
+		ptr += 4;
 		strcpy(ptr, rest);
 	}
 
 	if (!strlen(htmlbuff)) {
-		if (!strncmp(request, GET, strlen(GET) - 1)) {
+		if (!strncmp(request, GET, strlen(GET))) {
 			strcpy(response, HTTP_404);
 		} else {
 			strcpy(response, HTTP_400);

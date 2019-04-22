@@ -25,7 +25,9 @@ Content-Length: 0\r\n\r\n"
 #define HTTP_404 "HTTP/1.1 404 Not Found\r\n\
 Content-Length: 0\r\n\r\n"
 
-#define GET "GET / "
+#define GET  "GET /"
+#define GET_INTRO "GET / "
+#define GET_START "GET /?start=Start "
 #define POST "POST / "
 
 char *get_response(char *request);
