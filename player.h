@@ -24,7 +24,7 @@ extern int num_players;
 
 player_t *new_player(int id);
 void add_player(player_t *player);
-void add_name_to_player(int id, char *username);
+void add_name_to_player(int id, char *name);
 void free_players();
 
 #endif

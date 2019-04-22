@@ -44,7 +44,7 @@ void add_player(player_t *player) {
 
 void add_name_to_player(int id, char *name) {
     player_t *player = players[id];
-    player->name = malloc(sizeof(char) * strlen(name) + 1);
+    player->name = malloc(sizeof(char) * (strlen(name) + 1));
     bzero(player->name, strlen(name) + 1);
     strcpy(player->name, name);
 }
