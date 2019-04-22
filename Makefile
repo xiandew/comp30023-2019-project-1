@@ -29,7 +29,7 @@ $(OBJDIR):
 # `make CLEAN` to remove all object and executable files
 # `make cleanly` to `make` then immediately remove object files (inefficient)
 clean:
-	rm -f $(OBJDIR)
+	rm -f -r $(OBJDIR)
 CLEAN: clean
 	rm -f $(EXE)
 cleanly: all clean

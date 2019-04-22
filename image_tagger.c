@@ -21,10 +21,14 @@
 #include "response.h"
 #include "player.h"
 
-static char buffer[BUFFER_SIZE];
+/*----------------------------------------------------------------------------*/
 
-int main(int argc, char * argv[])
-{
+static char request[BUFFER_SIZE];
+
+/*----------------------------------------------------------------------------*/
+
+int main(int argc, char * argv[]) {
+
 	signal(SIGINT, free_players);
 
 	if (argc < 3) {
@@ -98,8 +102,8 @@ int main(int argc, char * argv[])
 				}
 				// a message is sent from the client
 				else {
-					bzero(buffer, BUFFER_SIZE);
-					int n = read(i, buffer, BUFFER_SIZE - 1);
+					bzero(request, BUFFER_SIZE);
+					int n = read(i, request, BUFFER_SIZE - 1);
 					if (n <= 0) {
 						if (n < 0) {
 							perror("read");
@@ -109,10 +113,10 @@ int main(int argc, char * argv[])
 						close(i);
 						FD_CLR(i, &masterfds);
 					} else {
-						// create reponse message and write into buffer
-						response(buffer);
+						// create reponse message
+						char *response = get_response(request);
 
-						if (write(i, buffer, strlen(buffer)) < 0) {
+						if (write(i, response, strlen(response)) < 0) {
 							perror("write");
 							close(i);
 							FD_CLR(i, &masterfds);

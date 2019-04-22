@@ -19,8 +19,11 @@ typedef struct {
 	int num_keywords;
 } player_t;
 
-extern playert** players;
+extern player_t** players;
 extern int max_players;
 extern int num_players;
 
-player_t new_player(int id, char *name)
+player_t *new_player(int id, char *name);
+void free_players();
+
+#endif
