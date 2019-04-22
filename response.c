@@ -32,9 +32,15 @@ void read_html(char *htmlname) {
 }
 
 int get_user_id(char *request) {
-	char *cookie_payload= strstr(request, NEEDLE_COOKIE) + strlen(NEEDLE_COOKIE);
-	cookie_payload[strcspn(cookie_payload, "\r\n")] = 0;
-	return atoi(cookie_payload);
+	char *cookie_payload= strstr(request, NEEDLE_COOKIE);
+	if (cookie_payload) {
+		char *user_id = cookie_payload + strlen(NEEDLE_COOKIE);
+		char cpy[strlen(user_id)];
+		strcpy(cpy, user_id);
+		cpy[strcspn(user_id, "\r\n")] = 0;
+		return atoi(cpy);
+	}
+	return -1;
 }
 
 void append_name_to_html(char *name) {
@@ -55,25 +61,33 @@ char *get_response(char *request) {
 	bzero(response, BUFFER_SIZE);
 	bzero(htmlbuff, BUFFER_SIZE);
 
+	int user_id = get_user_id(request);
+
 	// response of the intro page
 	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
 		// add a new user. Response with Set-cookie.
-		if (!strstr(request, NEEDLE_COOKIE)) {
-			read_html(HTML_INTRO);
-
+		if (user_id < 0) {
 			int user_id = num_users;
 			add_user(new_user(user_id));
+
+			read_html(HTML_INTRO);
 			snprintf(response, BUFFER_SIZE,
 				HTTP_200_SET_COOKIE_FORMAT,
 				user_id, strlen(htmlbuff), htmlbuff);
+		} else {
+			read_html(HTML_START);
+			//append_name_to_html(users[user_id]->name);
 		}
 	}
 
 	// response to submission of the user name
-	if (!strncmp(request, POST_NAME, strlen(POST_NAME))) {
-		if (strstr(request, NEEDLE_NAME)) {
-			char *name = strstr(request, NEEDLE_NAME) + strlen(NEEDLE_NAME);
-			add_name_to_user(get_user_id(request), name);
+	if (!strncmp(request, POST_INTRO, strlen(POST_INTRO))) {
+		char *payload = strstr(request, NEEDLE_NAME);
+
+		if (payload) {
+			char *name = payload + strlen(NEEDLE_NAME);
+			printf("%s\n", name);
+			add_name_to_user(user_id, name);
 
 			read_html(HTML_START);
 			append_name_to_html(name);
@@ -86,7 +100,7 @@ char *get_response(char *request) {
 	}
 
 	// response to submission of a keyword
-	// if () {
+	// if (!strncmp(request, POST_START, strlen(POST_START))) {
 	//
 	// }
 
