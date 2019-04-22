@@ -4,8 +4,8 @@ CC     = gcc
 CFLAGS = -Wall -std=c99
 EXE    = image_tagger
 OBJDIR = bin
-OBJ    = $(addprefix $(OBJDIR)/, image_tagger.o response.o player.o)
-DEPS   = response.h player.h
+OBJ    = $(addprefix $(OBJDIR)/, image_tagger.o response.o user.o)
+DEPS   = response.h user.h
 
 # top (default) targets
 all: $(EXE)

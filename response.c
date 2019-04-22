@@ -6,8 +6,7 @@
 #include <fcntl.h>
 
 #include "response.h"
-#include "reg_match.h"
-#include "player.h"
+#include "user.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -32,7 +31,7 @@ void read_html(char *htmlname) {
 	close(fd);
 }
 
-int get_player_id(char *request) {
+int get_user_id(char *request) {
 	char *cookie_payload= strstr(request, NEEDLE_COOKIE) + strlen(NEEDLE_COOKIE);
 	cookie_payload[strcspn(cookie_payload, "\r\n")] = 0;
 	return atoi(cookie_payload);
@@ -58,22 +57,23 @@ char *get_response(char *request) {
 
 	// response of the intro page
 	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
-		read_html(HTML_INTRO);
-		// add a new player. Response with Set-cookie.
+		// add a new user. Response with Set-cookie.
 		if (!strstr(request, NEEDLE_COOKIE)) {
-			int player_id = num_players;
-			add_player(new_player(player_id));
+			read_html(HTML_INTRO);
+
+			int user_id = num_users;
+			add_user(new_user(user_id));
 			snprintf(response, BUFFER_SIZE,
 				HTTP_200_SET_COOKIE_FORMAT,
-				player_id, strlen(htmlbuff), htmlbuff);
+				user_id, strlen(htmlbuff), htmlbuff);
 		}
 	}
 
-	// response to submission of the player name
-	if (!strncmp(request, POST, strlen(POST))) {
-		if (strstr(request, NEEDLE_USER)) {
-			char *name = strstr(request, NEEDLE_USER) + strlen(NEEDLE_USER);
-			add_name_to_player(get_player_id(request), name);
+	// response to submission of the user name
+	if (!strncmp(request, POST_NAME, strlen(POST_NAME))) {
+		if (strstr(request, NEEDLE_NAME)) {
+			char *name = strstr(request, NEEDLE_NAME) + strlen(NEEDLE_NAME);
+			add_name_to_user(get_user_id(request), name);
 
 			read_html(HTML_START);
 			append_name_to_html(name);
@@ -85,6 +85,11 @@ char *get_response(char *request) {
 		read_html(HTML_FIRST_TURN);
 	}
 
+	// response to submission of a keyword
+	// if () {
+	//
+	// }
+
 	// response to invalid requests
 	if (!strlen(htmlbuff)) {
 		if (!strncmp(request, GET, strlen(GET))) {
@@ -94,7 +99,7 @@ char *get_response(char *request) {
 		}
 	}
 
-	// response to players with cookies
+	// response to users with cookies
 	else if (!strlen(response)) {
 		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
 	}

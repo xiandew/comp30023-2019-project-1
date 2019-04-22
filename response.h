@@ -17,7 +17,7 @@
 
 #define HTTP_200_SET_COOKIE_FORMAT "HTTP/1.1 200 OK\r\n\
 Content-Type: text/html\r\n\
-Set-Cookie: player_id=%d\r\n\
+Set-Cookie: user_id=%d\r\n\
 Content-Length: %ld\r\n\r\n%s"
 
 #define HTTP_200_FORMAT "HTTP/1.1 200 OK\r\n\
@@ -30,13 +30,14 @@ Content-Length: 0\r\n\r\n"
 #define HTTP_404 "HTTP/1.1 404 Not Found\r\n\
 Content-Length: 0\r\n\r\n"
 
-#define POST "POST"
-#define GET  "GET"
+#define GET "GET"
 #define GET_INTRO "GET / "
 #define GET_START "GET /?start=Start "
 
-#define NEEDLE_COOKIE  "Cookie: player_id="
-#define NEEDLE_USER    "user="
+#define POST_NAME "POST / "
+
+#define NEEDLE_COOKIE  "Cookie: user_id="
+#define NEEDLE_NAME    "user="
 #define NEEDLE_QUIT    "quit=Quit"
 #define NEEDLE_KEYWORD "keyword="
 #define NEEDLE_GUESS   "&guess=Guess"

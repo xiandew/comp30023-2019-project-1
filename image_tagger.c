@@ -19,7 +19,7 @@
 #include <unistd.h>
 
 #include "response.h"
-#include "player.h"
+#include "user.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -29,7 +29,7 @@ static char request[BUFFER_SIZE];
 
 int main(int argc, char * argv[]) {
 
-	signal(SIGINT, free_players);
+	signal(SIGINT, free_users);
 
 	if (argc < 3) {
 		fprintf(stderr, "usage %s hostname port\n", argv[0]);
