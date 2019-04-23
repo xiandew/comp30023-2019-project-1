@@ -66,6 +66,14 @@ int main(int argc, char * argv[]) {
 	// listen on the socket
 	listen(sockfd, 5);
 
+	char ip[INET_ADDRSTRLEN];
+    printf(
+        "image_tagger server is now running at IP: %s on port %d\n",
+        // convert to human readable string
+        inet_ntop(serv_addr.sin_family, &serv_addr.sin_addr, ip, INET_ADDRSTRLEN),
+        ntohs(serv_addr.sin_port)
+    );
+
 	// initialise an active file descriptors set
 	fd_set masterfds;
 	FD_ZERO(&masterfds);
