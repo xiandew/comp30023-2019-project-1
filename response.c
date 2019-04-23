@@ -39,7 +39,7 @@ char *get_response(char *request) {
 	user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
 
 	// if user clicks the quit button or the other user has quited
-	if (strstr(request, NEEDLE_QUIT) || (other && other->state == QUITED)) {
+	if (strstr(request, NEEDLE_QUIT) || (other && other->other != user->id)) {
 		user->state = QUITED;
 		reset_user(user);
 		read_html(HTML_GAMEOVER);
@@ -71,13 +71,15 @@ char *get_response(char *request) {
 		read_html(HTML_FIRST_TURN);
 		if (user->other == NOT_PAIRED) {
 			paired_up(user);
+		} else {
+			user->state = PLAYING;
 		}
 	}
 
 	// response to submission of a keyword
 	if (!strncmp(request, POST_START, strlen(POST_START))) {
 		if (!other || user->round > other->round ||
-			(user->round == other->round && other->state != STARTED)) {
+			(user->round == other->round && other->state != PLAYING)) {
 			read_html(HTML_DISCARDED);
 		} else {
 			*strstr(request, NEEDLE_GUESS) = 0;

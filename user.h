@@ -15,6 +15,7 @@
 typedef enum {
 	NOT_PAIRED = -1,
 	STARTED,
+	PLAYING,
 	SUCCEED,
 	QUITED
 } STATE;

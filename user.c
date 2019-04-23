@@ -51,6 +51,7 @@ void paired_up(user_t *user) {
         if (other != user && other->state == STARTED && other->other == NOT_PAIRED) {
             user->other = i;
             other->other = user->id;
+            user->state = other->state = PLAYING;
             break;
         }
     }
@@ -60,14 +61,12 @@ void reset_user(user_t *user) {
     if (user->other == NOT_PAIRED) {
         return;
     }
-    user_t *other = users[user->other];
     if (user->state == SUCCEED) {
         user->round++;
     }
-    else if (other->state == QUITED && user->state == QUITED) {
-        other->state = user->state = NOT_PAIRED;
-        other->other = user->other = NOT_PAIRED;
-        other->round = user->round = 1;
+    if (user->state == QUITED) {
+        user->other = NOT_PAIRED;
+        user->round = 1;
     }
     for (int i = 0; i < user->num_keywords; i++) {
         bzero(user->keywords[i], MAX_INPUT_LEN + 1);
