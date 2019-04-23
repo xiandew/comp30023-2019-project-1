@@ -71,7 +71,8 @@ char *get_response(char *request) {
 	if (!strncmp(request, POST_START, strlen(POST_START))) {
 		user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
 
-		if (!other || user->round > other->round || other->state != STARTED) {
+		if (!other || user->round > other->round ||
+			(user->round == other->round && other->state != STARTED)) {
 			read_html(HTML_DISCARDED);
 		} else if (other->state == QUITED) {
 			user->state = QUITED;
