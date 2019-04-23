@@ -1,3 +1,8 @@
+/*
+ * Module for creating and recording the user-related information
+ * Created by Xiande Wen (xiandew, 905003)
+ */
+
 #ifndef USER_H
 #define USER_H
 

@@ -1,3 +1,8 @@
+/*
+ * Module for creating and recording the user-related information
+ * Created by Xiande Wen (xiandew, 905003)
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

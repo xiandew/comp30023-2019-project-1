@@ -1,3 +1,8 @@
+/*
+ * Module for creating response message according to the request
+ * Created by Xiande Wen (xiandew, 905003)
+ */
+
 #ifndef RESPONSE_H
 #define RESPONSE_H
 

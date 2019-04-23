@@ -1,3 +1,8 @@
+/*
+ * Module for creating response message according to the request
+ * Created by Xiande Wen (xiandew, 905003)
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

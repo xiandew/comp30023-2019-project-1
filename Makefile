@@ -1,10 +1,10 @@
-# Xiande Wen, 905003
+# Created by Xiande Wen (xiandew, 905003)
 
 CC     = gcc
 CFLAGS = -Wall -std=c99
 EXE    = image_tagger
 OBJDIR = bin
-OBJ    = $(addprefix $(OBJDIR)/, image_tagger.o response.o user.o)
+OBJ    = $(addprefix $(OBJDIR)/, main.o response.o user.o)
 DEPS   = response.h user.h
 
 # top (default) targets
@@ -27,9 +27,7 @@ $(OBJDIR):
 
 # `make clean` to remove all object files
 # `make CLEAN` to remove all object and executable files
-# `make cleanly` to `make` then immediately remove object files (inefficient)
 clean:
 	rm -f -r $(OBJDIR)
 CLEAN: clean
 	rm -f $(EXE)
-cleanly: all clean
