@@ -111,7 +111,6 @@ int main(int argc, char * argv[]) {
 						close(i);
 						FD_CLR(i, &masterfds);
 					} else {
-						printf("%s", request);
 						// create reponse message
 						char *response = get_response(request);
 						// printf("%s", response);
