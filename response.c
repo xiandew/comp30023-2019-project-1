@@ -37,6 +37,7 @@ char *get_response(char *request) {
 
 	user_t *user = users[user_id];
 
+	// response to press of the quit button
 	if (strstr(request, NEEDLE_QUIT)) {
 		user->state = QUITED;
 		reset_user(user);
