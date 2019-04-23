@@ -15,13 +15,14 @@ typedef enum {
 } STATE;
 
 typedef struct {
+	// id of the other player
+	int other;
 	int id;
+	int round;
 	STATE state;
 	char name[MAX_INPUT_LEN + 1];
 	char keywords[MAX_KEYWORDS][MAX_INPUT_LEN + 1];
 	int num_keywords;
-	// id of the other user.
-	int other;
 } user_t;
 
 extern user_t** users;

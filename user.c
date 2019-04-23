@@ -19,6 +19,7 @@ user_t *new_user() {
     user->id = num_users;
     user->other = NOT_PAIRED;
     user->state = NOT_PAIRED;
+    user->round = 1;
     user->num_keywords = 0;
 
     return user;
@@ -56,12 +57,13 @@ void reset_user(user_t *user) {
         return;
     }
     user_t *other = users[user->other];
-    if (other->state == QUITED || user->state == QUITED) {
-        other->state = user->state = NOT_PAIRED;
-        other->other = user->other = NOT_PAIRED;
-    }
     if (other->state == SUCCEED || user->state == SUCCEED) {
         other->state = user->state = SUCCEED;
+        other->round = user->round = 2;
+    }
+    else if (other->state == QUITED && user->state == QUITED) {
+        other->state = user->state = NOT_PAIRED;
+        other->other = user->other = NOT_PAIRED;
     }
     for (int i = 0; i < user->num_keywords; i++) {
         bzero(user->keywords[i], MAX_INPUT_LEN + 1);
