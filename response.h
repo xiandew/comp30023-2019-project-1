@@ -1,6 +1,8 @@
 #ifndef RESPONSE_H
 #define RESPONSE_H
 
+#include "user.h"
+
 #define MAX_PATH_LEN 128
 #define HTML_PATH "html/"
 #define HTML_PATH_FORMAT HTML_PATH "%s.html"
@@ -48,5 +50,10 @@ Content-Length: 0\r\n\r\n"
 #define NEEDLE_GUESS   "&guess=Guess"
 
 char *get_response(char *request);
+void read_html(char *htmlname);
+int get_user_id(char *request);
+void append_name_to_html(user_t *user);
+void append_keywords_to_html(user_t *user);
+bool has_submitted(user_t *other, char *keyword);
 
 #endif

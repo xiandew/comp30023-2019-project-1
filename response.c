@@ -15,6 +15,99 @@ static char response[BUFFER_SIZE];
 
 /*----------------------------------------------------------------------------*/
 
+char *get_response(char *request) {
+	bzero(response, BUFFER_SIZE);
+	bzero(htmlbuff, BUFFER_SIZE);
+
+	int user_id = get_user_id(request);
+
+	// add a new user. Response with Set-cookie.
+	if (user_id < 0) {
+		user_t *new_user = add_new_user();
+		read_html(HTML_INTRO);
+		snprintf(response, BUFFER_SIZE,
+			HTTP_200_SET_COOKIE_FORMAT, new_user->id, strlen(htmlbuff), htmlbuff);
+		return response;
+	}
+
+	user_t *user = users[user_id];
+
+	if (strstr(request, NEEDLE_QUIT)) {
+		user->state = QUITED;
+		reset_user(user);
+		read_html(HTML_GAMEOVER);
+		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
+		return response;
+	}
+
+	// response of the intro page
+	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
+		// proceed users with cookies to the start page
+		read_html(HTML_START);
+		append_name_to_html(user);
+	}
+
+	// response to submission of the user name
+	if (!strncmp(request, POST_INTRO, strlen(POST_INTRO))) {
+		char *payload = strstr(request, NEEDLE_NAME);
+		if (payload) {
+			char *name = payload + strlen(NEEDLE_NAME);
+			add_name_to_user(user, name);
+			read_html(HTML_START);
+			append_name_to_html(user);
+		}
+	}
+
+	// response to press of the start button
+	if (!strncmp(request, GET_START, strlen(GET_START))) {
+		read_html(HTML_FIRST_TURN);
+		paired_up(user);
+	}
+
+	// response to submission of a keyword
+	if (!strncmp(request, POST_START, strlen(POST_START))) {
+		*strstr(request, NEEDLE_GUESS) = 0;
+		char *keyword = strstr(request, NEEDLE_KEYWORD) + strlen(NEEDLE_KEYWORD);
+		user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
+
+		if (!other) {
+			read_html(HTML_DISCARDED);
+		} else if (other->state == QUITED) {
+			reset_user(user);
+			read_html(HTML_GAMEOVER);
+		} else {
+			add_keyword_to_user(user, keyword);
+			if (other->state == SUCCEED || has_submitted(other, keyword)) {
+				user->state = SUCCEED;
+				reset_user(user);
+				read_html(HTML_ENDGAME);
+			} else {
+				read_html(HTML_ACCEPTED);
+				append_keywords_to_html(user);
+			}
+		}
+	}
+
+	// response to invalid requests
+	if (!strlen(htmlbuff)) {
+		if (!strncmp(request, GET, strlen(GET))) {
+			strcpy(response, HTTP_404);
+		} else {
+			strcpy(response, HTTP_400);
+		}
+	}
+
+	// response to users with cookies
+	else if (!strlen(response)) {
+		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
+	}
+
+	return response;
+}
+
+/*----------------------------------------------------------------------------*/
+//helper functions
+
 // read the html contents into htmlbuff
 void read_html(char *htmlname) {
 	// get the path of the html file
@@ -46,81 +139,45 @@ int get_user_id(char *request) {
 	return -1;
 }
 
-void append_name_to_html(char *name) {
-	char *rest_ptr = strstr(htmlbuff, "<form method=\"GET\">");
-	char rest[strlen(rest_ptr)];
-	strcpy(rest, rest_ptr);
-	char *ptr = rest_ptr;
-	strcpy(ptr, "<p>");
-	ptr += 3;
-	strcpy(ptr, name);
-	ptr += strlen(name);
-	strcpy(ptr, "</p>");
-	ptr += 4;
-	strcpy(ptr, rest);
+void append_name_to_html(user_t *user) {
+	char *name = user->name;
+	char *insert_ptr = strstr(htmlbuff, "<form method=\"GET\">");
+	char remaining[strlen(insert_ptr)];
+	strcpy(remaining, insert_ptr);
+	strcpy(insert_ptr, "<p>");
+	insert_ptr += 3;
+	strcpy(insert_ptr, name);
+	insert_ptr += strlen(name);
+	strcpy(insert_ptr, "</p>");
+	insert_ptr += 4;
+	strcpy(insert_ptr, remaining);
 }
 
-char *get_response(char *request) {
-	bzero(response, BUFFER_SIZE);
-	bzero(htmlbuff, BUFFER_SIZE);
-
-	int user_id = get_user_id(request);
-
-	// response of the intro page
-	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
-		// add a new user. Response with Set-cookie.
-		if (user_id < 0) {
-			int user_id = num_users;
-			add_user(new_user(user_id));
-
-			read_html(HTML_INTRO);
-			snprintf(response, BUFFER_SIZE,
-				HTTP_200_SET_COOKIE_FORMAT,
-				user_id, strlen(htmlbuff), htmlbuff);
-		}
-		// otherwise proceed the user to the start page
-		else if (users[user_id]->name) {
-			read_html(HTML_START);
-			append_name_to_html(users[user_id]->name);
+void append_keywords_to_html(user_t *user) {
+	char *insert_ptr = strstr(htmlbuff, "<form method=\"POST\">");
+	char remaining[strlen(insert_ptr)];
+	strcpy(remaining, insert_ptr);
+	strcpy(insert_ptr, "<p>");
+	insert_ptr += 3;
+	for (int i = 0; i < user->num_keywords; i++) {
+		char *keyword = user->keywords[i];
+		strcpy(insert_ptr, keyword);
+		insert_ptr += strlen(keyword);
+		if (i < (user->num_keywords - 1)) {
+			strcpy(insert_ptr, ", ");
+			insert_ptr += 2;
 		}
 	}
+	strcpy(insert_ptr, "</p>");
+	insert_ptr += 4;
+	strcpy(insert_ptr, remaining);
+}
 
-	// response to submission of the user name
-	if (!strncmp(request, POST_INTRO, strlen(POST_INTRO))) {
-		char *payload = strstr(request, NEEDLE_NAME);
-		if (payload) {
-			char *name = payload + strlen(NEEDLE_NAME);
-			printf("%s\n", name);
-			add_name_to_user(user_id, name);
-
-			read_html(HTML_START);
-			append_name_to_html(name);
+bool has_submitted(user_t *other, char *keyword) {
+	for (int i = 0; i < other->num_keywords; i++) {
+		if (!strcmp(other->keywords[i], keyword)) {
+			return true;
 		}
 	}
-
-	// response to press of the start button
-	if (!strncmp(request, GET_START, strlen(GET_START))) {
-		read_html(HTML_FIRST_TURN);
-	}
-
-	// response to submission of a keyword
-	if (!strncmp(request, POST_START, strlen(POST_START))) {
-
-	}
-
-	// response to invalid requests
-	if (!strlen(htmlbuff)) {
-		if (!strncmp(request, GET, strlen(GET))) {
-			strcpy(response, HTTP_404);
-		} else {
-			strcpy(response, HTTP_400);
-		}
-	}
-
-	// response to users with cookies
-	else if (!strlen(response)) {
-		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
-	}
-
-	return response;
+	return false;
 }

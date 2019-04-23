@@ -1,30 +1,37 @@
 #ifndef USER_H
 #define USER_H
 
-#define MIN_USERS 2
-#define MIN_KEYWORD 1
+#include <stdbool.h>
 
-// id: starts from 0.
-// other: id of the other user. -1 means the user is not using.
-// name: user's name.
-// keywords: user's guessed words.
-// max_keywords: number of keywords that can be stored in the list.
-// num_keywords: number of keywords that have been recorded.
+#define MIN_USERS 2
+#define MAX_KEYWORDS 20
+#define MAX_INPUT_LEN 20
+
+typedef enum {
+	NOT_PAIRED = -1,
+	STARTED,
+	SUCCEED,
+	QUITED
+} STATE;
+
 typedef struct {
 	int id;
-	int other;
-	char *name;
-	char **keywords;
-	int max_keywords;
+	STATE state;
+	char name[MAX_INPUT_LEN + 1];
+	char keywords[MAX_KEYWORDS][MAX_INPUT_LEN + 1];
 	int num_keywords;
+	// id of the other user.
+	int other;
 } user_t;
 
 extern user_t** users;
 extern int num_users;
 
-user_t *new_user(int id);
-void add_user(user_t *user);
-void add_name_to_user(int id, char *name);
+user_t *add_new_user();
+void paired_up(user_t *user);
+void reset_user(user_t *user);
+void add_name_to_user(user_t *user, char *name);
+void add_keyword_to_user(user_t *user, char *keyword);
 void free_users();
 
 #endif

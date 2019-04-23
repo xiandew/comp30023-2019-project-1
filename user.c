@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <strings.h>
 
@@ -12,26 +13,20 @@ int max_users = MIN_USERS;
 // number of users that have been recorded
 int num_users = 0;
 
-user_t *new_user(int id) {
+user_t *new_user() {
     user_t *user = malloc(sizeof(user_t));
 
-    user->id = id;
-    user->other = -1;
-    for (int i = 0; i < num_users; i++) {
-        if (users[i]->other < 0) {
-            user->other = i;
-            break;
-        }
-    }
-
-    user->keywords = malloc(sizeof(char*) * MIN_KEYWORD);
-    user->max_keywords = MIN_KEYWORD;
+    user->id = num_users;
+    user->other = NOT_PAIRED;
+    user->state = NOT_PAIRED;
     user->num_keywords = 0;
 
     return user;
 }
 
-void add_user(user_t *user) {
+user_t *add_new_user() {
+    user_t *user = new_user();
+
     if (users == NULL) {
         users = malloc(sizeof(user_t*) * MIN_USERS);
     }
@@ -40,24 +35,54 @@ void add_user(user_t *user) {
         users = realloc(users, sizeof(user_t*) * max_users);
     }
     users[num_users++] = user;
+
+    return user;
 }
 
-void add_name_to_user(int id, char *name) {
-    user_t *user = users[id];
-    user->name = malloc(sizeof(char) * (strlen(name) + 1));
-    bzero(user->name, strlen(name) + 1);
+void paired_up(user_t *user) {
+    user->state = STARTED;
+    for (int i = 0; i < num_users; i++) {
+        user_t *other = users[i];
+        if (other != user && other->state == STARTED && other->other == NOT_PAIRED) {
+            user->other = i;
+            other->other = user->id;
+            break;
+        }
+    }
+}
+
+void reset_user(user_t *user) {
+    if (user->other == NOT_PAIRED) {
+        return;
+    }
+    user_t *other = users[user->other];
+    if (other->state == QUITED || user->state == QUITED) {
+        other->state = user->state = NOT_PAIRED;
+        other->other = user->other = NOT_PAIRED;
+    }
+    if (other->state == SUCCEED || user->state == SUCCEED) {
+        other->state = user->state = SUCCEED;
+    }
+    for (int i = 0; i < user->num_keywords; i++) {
+        bzero(user->keywords[i], MAX_INPUT_LEN + 1);
+    }
+    user->num_keywords = 0;
+}
+
+void add_name_to_user(user_t *user, char *name) {
+    bzero(user->name, MAX_INPUT_LEN + 1);
     strcpy(user->name, name);
+}
+
+void add_keyword_to_user(user_t *user, char *keyword) {
+    char *thekeyword = user->keywords[user->num_keywords++];
+    bzero(thekeyword, MAX_INPUT_LEN + 1);
+    strcpy(thekeyword, keyword);
 }
 
 void free_users() {
     for (int i = 0; i < num_users; i++) {
-        user_t *user = users[i];
-        free(user->name);
-        for (int j = 0; j < user->num_keywords; j++) {
-            free(user->keywords[j]);
-        }
-        free(user->keywords);
-        free(user);
+        free(users[i]);
     }
     free(users);
 }
