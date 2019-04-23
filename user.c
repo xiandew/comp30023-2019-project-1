@@ -41,7 +41,6 @@ user_t *add_new_user() {
 }
 
 void paired_up(user_t *user) {
-    user->state = STARTED;
     for (int i = 0; i < num_users; i++) {
         user_t *other = users[i];
         if (other != user && other->state == STARTED && other->other == NOT_PAIRED) {
@@ -57,13 +56,13 @@ void reset_user(user_t *user) {
         return;
     }
     user_t *other = users[user->other];
-    if (other->state == SUCCEED || user->state == SUCCEED) {
-        other->state = user->state = STARTED;
-        other->round = user->round *= -1;
+    if (user->state == SUCCEED) {
+        user->round++;
     }
     else if (other->state == QUITED && user->state == QUITED) {
         other->state = user->state = NOT_PAIRED;
         other->other = user->other = NOT_PAIRED;
+        other->round = user->round = 1;
     }
     for (int i = 0; i < user->num_keywords; i++) {
         bzero(user->keywords[i], MAX_INPUT_LEN + 1);

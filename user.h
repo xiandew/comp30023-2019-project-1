@@ -18,7 +18,6 @@ typedef struct {
 	// id of the other player
 	int other;
 	int id;
-	// 1: first round; -1: second round
 	int round;
 	STATE state;
 	char name[MAX_INPUT_LEN + 1];

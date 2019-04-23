@@ -60,16 +60,8 @@ char *get_response(char *request) {
 
 	// response to press of the start button
 	if (!strncmp(request, GET_START, strlen(GET_START))) {
+		user->state = STARTED;
 		read_html(HTML_FIRST_TURN);
-		if (user->round == 1) {
-			// first round use default image
-		}
-		if (user->round == -1) {
-			// second round change to image-4
-			char *change_ptr = strstr(htmlbuff,
-				".jpg\" alt=\"HTML5 Icon\" style=\"width:700px;height:400px;\">") - 1;
-			*change_ptr = '4';
-		}
 		if (user->other == NOT_PAIRED) {
 			paired_up(user);
 		}
@@ -77,19 +69,20 @@ char *get_response(char *request) {
 
 	// response to submission of a keyword
 	if (!strncmp(request, POST_START, strlen(POST_START))) {
-		*strstr(request, NEEDLE_GUESS) = 0;
-		char *keyword = strstr(request, NEEDLE_KEYWORD) + strlen(NEEDLE_KEYWORD);
 		user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
 
-		if (!other) {
+		if (!other || user->round > other->round || other->state == STARTED) {
 			read_html(HTML_DISCARDED);
 		} else if (other->state == QUITED) {
 			user->state = QUITED;
 			reset_user(user);
 			read_html(HTML_GAMEOVER);
 		} else {
+			*strstr(request, NEEDLE_GUESS) = 0;
+			char *keyword =
+				strstr(request, NEEDLE_KEYWORD) + strlen(NEEDLE_KEYWORD);
 			add_keyword_to_user(user, keyword);
-			if (other->state == SUCCEED || has_submitted(other, keyword)) {
+			if (user->round < other->round || has_submitted(other, keyword)) {
 				user->state = SUCCEED;
 				reset_user(user);
 				read_html(HTML_ENDGAME);
@@ -97,6 +90,17 @@ char *get_response(char *request) {
 				read_html(HTML_ACCEPTED);
 				append_keywords_to_html(user);
 			}
+		}
+	}
+
+	// alternating images for 3*.html, 4*.html and 5*.html each round.
+	if (strstr(htmlbuff, "Keyword: <input")) {
+		char *change_ptr = strstr(htmlbuff,
+			".jpg\" alt=\"HTML5 Icon\" style=\"width:700px;height:400px;\">") - 1;
+		if (user->round % 2) {
+			*change_ptr = '2';
+		} else {
+			*change_ptr = '4';
 		}
 	}
 
