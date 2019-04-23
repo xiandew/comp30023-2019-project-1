@@ -36,9 +36,10 @@ char *get_response(char *request) {
 	}
 
 	user_t *user = users[user_id];
+	user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
 
-	// response to press of the quit button
-	if (strstr(request, NEEDLE_QUIT)) {
+	// if user clicks the quit button or the other user has quited
+	if (strstr(request, NEEDLE_QUIT) || (other && other->state == QUITED)) {
 		user->state = QUITED;
 		reset_user(user);
 		read_html(HTML_GAMEOVER);
@@ -75,13 +76,7 @@ char *get_response(char *request) {
 
 	// response to submission of a keyword
 	if (!strncmp(request, POST_START, strlen(POST_START))) {
-		user_t *other = (user->other == NOT_PAIRED) ? NULL : users[user->other];
-
-		if (other && other->state == QUITED) {
-			user->state = QUITED;
-			reset_user(user);
-			read_html(HTML_GAMEOVER);
-		} else if (!other || user->round > other->round ||
+		if (!other || user->round > other->round ||
 			(user->round == other->round && other->state != STARTED)) {
 			read_html(HTML_DISCARDED);
 		} else {
