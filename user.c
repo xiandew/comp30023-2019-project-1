@@ -58,8 +58,8 @@ void reset_user(user_t *user) {
     }
     user_t *other = users[user->other];
     if (other->state == SUCCEED || user->state == SUCCEED) {
-        other->state = user->state = SUCCEED;
-        other->round = user->round = 2;
+        other->state = user->state = STARTED;
+        other->round = user->round *= -1;
     }
     else if (other->state == QUITED && user->state == QUITED) {
         other->state = user->state = NOT_PAIRED;

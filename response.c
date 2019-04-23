@@ -62,13 +62,13 @@ char *get_response(char *request) {
 	if (!strncmp(request, GET_START, strlen(GET_START))) {
 		read_html(HTML_FIRST_TURN);
 		if (user->round == 1) {
-			// default image
+			// first round use default image
 		}
-		if (user->round == 2) {
-			// change to image-4
+		if (user->round == -1) {
+			// second round change to image-4
 			char *change_ptr = strstr(htmlbuff,
 				".jpg\" alt=\"HTML5 Icon\" style=\"width:700px;height:400px;\">") - 1;
-			*change_ptr = 4;
+			*change_ptr = '4';
 		}
 		if (user->other == NOT_PAIRED) {
 			paired_up(user);
