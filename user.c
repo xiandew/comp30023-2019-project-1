@@ -76,13 +76,13 @@ void reset_user(user_t *user) {
 
 void add_name_to_user(user_t *user, char *name) {
     bzero(user->name, MAX_INPUT_LEN + 1);
-    strcpy(user->name, name);
+    strncpy(user->name, name, MAX_INPUT_LEN);
 }
 
 void add_keyword_to_user(user_t *user, char *keyword) {
     char *thekeyword = user->keywords[user->num_keywords++];
     bzero(thekeyword, MAX_INPUT_LEN + 1);
-    strcpy(thekeyword, keyword);
+    strncpy(thekeyword, keyword, MAX_INPUT_LEN);
 }
 
 void free_users() {

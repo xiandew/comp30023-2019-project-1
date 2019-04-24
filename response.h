@@ -49,6 +49,8 @@ Content-Length: 0\r\n\r\n"
 #define NEEDLE_GUESS   "&guess=Guess"
 
 char *get_response(char *request);
+char *parse_method(char **request);
+char *parse_route(char **request);
 void read_html(char *htmlname);
 int get_user_id(char *request);
 void append_name_to_html(user_t *user);

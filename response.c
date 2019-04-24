@@ -24,31 +24,13 @@ char *get_response(char *request) {
 	bzero(response, BUFFER_SIZE);
 	bzero(htmlbuff, BUFFER_SIZE);
 
-	char *method = NULL;
-
-	// parse methods
-	if (!strncmp(request, GET, strlen(GET))) {
-		request += strlen(GET);
-		method = GET;
-	} else if(!strncmp(request, POST, strlen(POST))) {
-		request += strlen(POST);
-		method = POST;
-	}
+	char *method = parse_method(&request);
 	// invalid methods
 	if (!method) {
 		return HTTP_400;
 	}
-
-	char *route = NULL;
-
-	// parse routes
-	if (!strncmp(request, ROUTE_INTRO, strlen(ROUTE_INTRO))) {
-		request += strlen(ROUTE_INTRO);
-		route = ROUTE_INTRO;
-	} else if(!strncmp(request, ROUTE_START, strlen(ROUTE_START))) {
-		request += strlen(ROUTE_START);
-		route = ROUTE_START;
-	}
+	
+	char *route = parse_route(&request);
 	// invalid routes
 	if (!route) {
 		return HTTP_404;
@@ -59,8 +41,8 @@ char *get_response(char *request) {
 	if (user_id < 0) {
 		user_t *new_user = add_new_user();
 		read_html(HTML_INTRO);
-		snprintf(response, BUFFER_SIZE,
-			HTTP_200_SET_COOKIE_FORMAT, new_user->id, strlen(htmlbuff), htmlbuff);
+		snprintf(response, BUFFER_SIZE, HTTP_200_SET_COOKIE_FORMAT,
+									new_user->id, strlen(htmlbuff), htmlbuff);
 		return response;
 	}
 
@@ -149,6 +131,28 @@ char *get_response(char *request) {
 
 /*----------------------------------------------------------------------------*/
 //helper functions
+
+char *parse_method(char **request) {
+	if (!strncmp(*request, GET, strlen(GET))) {
+		*request += strlen(GET);
+		return GET;
+	} else if(!strncmp(*request, POST, strlen(POST))) {
+		*request += strlen(POST);
+		return POST;
+	}
+	return NULL;
+}
+
+char *parse_route(char **request) {
+	if (!strncmp(*request, ROUTE_INTRO, strlen(ROUTE_INTRO))) {
+		*request += strlen(ROUTE_INTRO);
+		return ROUTE_INTRO;
+	} else if(!strncmp(*request, ROUTE_START, strlen(ROUTE_START))) {
+		*request += strlen(ROUTE_START);
+		return ROUTE_START;
+	}
+	return NULL;
+}
 
 // read the html contents into htmlbuff
 void read_html(char *htmlname) {
