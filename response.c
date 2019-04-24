@@ -29,7 +29,7 @@ char *get_response(char *request) {
 	if (!method) {
 		return HTTP_400;
 	}
-	
+
 	char *route = parse_route(&request);
 	// invalid routes
 	if (!route) {
@@ -42,7 +42,7 @@ char *get_response(char *request) {
 		user_t *new_user = add_new_user();
 		read_html(HTML_INTRO);
 		snprintf(response, BUFFER_SIZE, HTTP_200_SET_COOKIE_FORMAT,
-									new_user->id, strlen(htmlbuff), htmlbuff);
+					new_user->id, strlen(htmlbuff), htmlbuff);
 		return response;
 	}
 
