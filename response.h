@@ -37,16 +37,10 @@ Content-Length: 0\r\n\r\n"
 #define HTTP_404 "HTTP/1.1 404 Not Found\r\n\
 Content-Length: 0\r\n\r\n"
 
+#define GET "GET"
+#define POST "POST"
 #define ROUTE_INTRO " / "
 #define ROUTE_START " /?start=Start "
-
-#define GET "GET"
-#define GET_INTRO GET ROUTE_INTRO
-#define GET_START GET ROUTE_START
-
-#define POST "POST"
-#define POST_INTRO POST ROUTE_INTRO
-#define POST_START POST ROUTE_START
 
 #define NEEDLE_COOKIE  "Cookie: user_id="
 #define NEEDLE_NAME    "user="

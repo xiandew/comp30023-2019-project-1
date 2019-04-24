@@ -24,8 +24,37 @@ char *get_response(char *request) {
 	bzero(response, BUFFER_SIZE);
 	bzero(htmlbuff, BUFFER_SIZE);
 
-	int user_id = get_user_id(request);
+	char *method = NULL;
 
+	// parse methods
+	if (!strncmp(request, GET, strlen(GET))) {
+		request += strlen(GET);
+		method = GET;
+	} else if(!strncmp(request, POST, strlen(POST))) {
+		request += strlen(POST);
+		method = POST;
+	}
+	// invalid methods
+	if (!method) {
+		return HTTP_400;
+	}
+
+	char *route = NULL;
+
+	// parse routes
+	if (!strncmp(request, ROUTE_INTRO, strlen(ROUTE_INTRO))) {
+		request += strlen(ROUTE_INTRO);
+		route = ROUTE_INTRO;
+	} else if(!strncmp(request, ROUTE_START, strlen(ROUTE_START))) {
+		request += strlen(ROUTE_START);
+		route = ROUTE_START;
+	}
+	// invalid routes
+	if (!route) {
+		return HTTP_404;
+	}
+
+	int user_id = get_user_id(request);
 	// add a new user. Response with Set-cookie.
 	if (user_id < 0) {
 		user_t *new_user = add_new_user();
@@ -47,57 +76,63 @@ char *get_response(char *request) {
 		return response;
 	}
 
-	// response of the intro page
-	if (!strncmp(request, GET_INTRO, strlen(GET_INTRO))) {
-		// proceed users with cookies to the start page
-		read_html(HTML_START);
-		append_name_to_html(user);
-	}
-
-	// response to submission of the user name
-	if (!strncmp(request, POST_INTRO, strlen(POST_INTRO))) {
-		char *payload = strstr(request, NEEDLE_NAME);
-		if (payload) {
-			char *name = payload + strlen(NEEDLE_NAME);
-			add_name_to_user(user, name);
+	if (!strcmp(method, GET)){
+		// if users with cookies try to get the intro page
+		if (!strcmp(route, ROUTE_INTRO)) {
+			// proceed them to the start page
 			read_html(HTML_START);
 			append_name_to_html(user);
 		}
-	}
-
-	// response to press of the start button
-	if (!strncmp(request, GET_START, strlen(GET_START))) {
-		user->state = STARTED;
-		read_html(HTML_FIRST_TURN);
-		if (user->other == NOT_PAIRED) {
-			paired_up(user);
-		} else {
-			user->state = PLAYING;
-		}
-	}
-
-	// response to submission of a keyword
-	if (!strncmp(request, POST_START, strlen(POST_START))) {
-		if (!other || user->round > other->round ||
-			(user->round == other->round && other->state != PLAYING)) {
-			read_html(HTML_DISCARDED);
-		} else {
-			*strstr(request, NEEDLE_GUESS) = 0;
-			char *keyword =
-				strstr(request, NEEDLE_KEYWORD) + strlen(NEEDLE_KEYWORD);
-			add_keyword_to_user(user, keyword);
-			if (user->round < other->round || has_submitted(other, keyword)) {
-				user->state = SUCCEED;
-				reset_user(user);
-				read_html(HTML_ENDGAME);
-			} else {
-				read_html(HTML_ACCEPTED);
-				append_keywords_to_html(user);
+		// if the user clicks the start button
+		if (!strcmp(route, ROUTE_START)) {
+			user->state = STARTED;
+			read_html(HTML_FIRST_TURN);
+			// first round
+			if (user->other == NOT_PAIRED) {
+				paired_up(user);
+			}
+			// next round
+			else {
+				user->state = PLAYING;
 			}
 		}
 	}
 
-	// alternating images for 3*.html, 4*.html and 5*.html each round.
+	if (!strcmp(method, POST)) {
+		// the user submits a name from intro page
+		if (!strcmp(route, ROUTE_INTRO)) {
+			char *payload = strstr(request, NEEDLE_NAME);
+			if (payload) {
+				char *name = payload + strlen(NEEDLE_NAME);
+				add_name_to_user(user, name);
+				read_html(HTML_START);
+				append_name_to_html(user);
+			}
+		}
+		// the user submits a keyword
+		if (!strcmp(route, ROUTE_START)) {
+			if (!other || user->round > other->round ||
+				(user->round == other->round && other->state != PLAYING)) {
+				read_html(HTML_DISCARDED);
+			} else {
+				*strstr(request, NEEDLE_GUESS) = 0;
+				char *keyword =
+					strstr(request, NEEDLE_KEYWORD) + strlen(NEEDLE_KEYWORD);
+				add_keyword_to_user(user, keyword);
+				if (user->round < other->round || has_submitted(other, keyword)) {
+					user->state = SUCCEED;
+					reset_user(user);
+					read_html(HTML_ENDGAME);
+				} else {
+					read_html(HTML_ACCEPTED);
+					append_keywords_to_html(user);
+				}
+			}
+		}
+	}
+
+	// alternating images for 3_first_turn.html, 4_accepted.html and
+	// 5_discarded.html each round.
 	if (strstr(htmlbuff, "Keyword: <input")) {
 		char *change_ptr = strstr(htmlbuff,
 			".jpg\" alt=\"HTML5 Icon\" style=\"width:700px;height:400px;\">") - 1;
@@ -108,20 +143,7 @@ char *get_response(char *request) {
 		}
 	}
 
-	// response to invalid requests
-	if (!strlen(htmlbuff)) {
-		if (!strncmp(request, GET, strlen(GET))) {
-			strcpy(response, HTTP_404);
-		} else {
-			strcpy(response, HTTP_400);
-		}
-	}
-
-	// response to users with cookies
-	else if (!strlen(response)) {
-		snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
-	}
-
+	snprintf(response, BUFFER_SIZE, HTTP_200_FORMAT, strlen(htmlbuff), htmlbuff);
 	return response;
 }
 
