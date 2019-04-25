@@ -80,6 +80,9 @@ void add_name_to_user(user_t *user, char *name) {
 }
 
 void add_keyword_to_user(user_t *user, char *keyword) {
+    if (user->num_keywords == MAX_KEYWORDS) {
+        return;
+    }
     char *thekeyword = user->keywords[user->num_keywords++];
     bzero(thekeyword, MAX_INPUT_LEN + 1);
     strncpy(thekeyword, keyword, MAX_INPUT_LEN);
